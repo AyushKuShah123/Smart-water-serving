@@ -2,6 +2,8 @@
 const int irSensorLeft = A0;
 const int irSensorRight = A1;
 const int irSensorPerson = 12;
+const int Enable = A5;
+
 
 // Define pins for motor driver
 const int motorLeftPin1 = 5;
@@ -26,7 +28,7 @@ long duration;
 int distance;
 
 // Define variables for water level sensor
-const int waterLevelThreshold = 500; // Adjust this value based on your sensor readings
+const int waterLevelThreshold = 1500; // Adjust this value based on your sensor readings
 
 void setup() {
   // Initialize serial communication for debugging
@@ -44,6 +46,7 @@ void setup() {
   pinMode(motorRightPin2, OUTPUT);
   pinMode(motorLeftEnable, OUTPUT);
   pinMode(motorRightEnable, OUTPUT);
+  pinMode(Enable, OUTPUT);
 
   // Set up pins for ultrasonic sensor as outputs and inputs
   pinMode(ultrasonicTrig, OUTPUT);
@@ -54,6 +57,8 @@ void setup() {
 
   // Set up pin for pump as output
   pinMode(pumpPin, OUTPUT);
+   // Turn off pump
+      digitalWrite(pumpPin, HIGH);
   delay(30);
 }
 
@@ -75,7 +80,7 @@ void loop() {
     digitalWrite(ultrasonicTrig, LOW);
     delayMicroseconds(5);
     digitalWrite(ultrasonicTrig, HIGH);
-    delayMicroseconds(10);
+    delayMicroseconds(5);
     digitalWrite(ultrasonicTrig, LOW);
 
     duration = pulseIn(ultrasonicEcho, HIGH);
@@ -83,22 +88,42 @@ void loop() {
     // Serial.print("Distance to glass: ");
     // Serial.println(distance);
 
-    if (distance < 8 && distance > 0) { // Glass detected at 8 cm
+    if (distance < 12 && distance >9) { // Glass detected at 8 cm
       Serial.println("Glass detected, turning pump on");
       //stopVehicle();
+      digitalWrite(Enable, LOW);
+      delay(1000);
       // Turn on pump
       digitalWrite(pumpPin, LOW);
       // Wait for the water level to reach threshold
-      while (analogRead(waterLevelSensor) < waterLevelThreshold) {
-        // Keep pump on
-        stopVehicle();
-      }
+      // if (analogRead(waterLevelSensor) < waterLevelThreshold) {
+      //   digitalWrite(pumpPin, HIGH);
+      //   // Keep pump on
+      //   //stopVehicle();
+      // }
+      Serial.println("Water level reached, turning pump off");
+      
+    }
+     else if (distance < 9  ) { // Glass detected at 9 cm
+      Serial.println("Glass detected, turning pump off");
+      //stopVehicle();
+      digitalWrite(Enable, LOW);
+      // delay(1000);
+      // Turn on pump
+      digitalWrite(pumpPin, HIGH);
+      // Wait for the water level to reach threshold
+      // if (analogRead(waterLevelSensor) < waterLevelThreshold) {
+      //   digitalWrite(pumpPin, HIGH);
+      //   // Keep pump on
+      //   //stopVehicle();
+      // }
       Serial.println("Water level reached, turning pump off");
       
     }
     else{
     // Turn off pump
       digitalWrite(pumpPin, HIGH);
+      digitalWrite(Enable, HIGH);
     }
   } 
   
